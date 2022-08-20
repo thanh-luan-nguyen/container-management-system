@@ -1,24 +1,32 @@
 import Head from "next/head";
+import { useEffect, useState } from "react";
+import { CloudFirestore } from "../../firebase/config";
+import { containerModel } from "../../model/containerModel";
 
-export default function Container({container}) {
+export default function Container({id}) {
+	const [container, setContainer] = useState({id:'', name:''})
+
+  useEffect(() => {
+		const unsub = CloudFirestore.getOneContainerSnapshot(id, setContainer)
+		return () => unsub
+  }, [id])	
+	
   return (
 	<>
 	  <Head>
-		<title>{container.name}</title>
+			<title>{container.name}</title>
 	  </Head>
 	  <div>
-		<h1>{container.name}</h1>
+			<h1>{container.name}</h1>
 	  </div>
 	</>
   )
 }
 
-export async function getServerSideProps({params}) {
-	const req = await fetch(`http://localhost:3000/containers.json`)
-	const data = await req.json()
-	const container = data.containers_list.find(c => c.id === params.id)
-
+export function getServerSideProps({ params }) {
 	return {
-	  props: {container}
+		props: {
+			id: params.id
+		}
 	}
-  }
+}

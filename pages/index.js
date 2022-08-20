@@ -1,31 +1,28 @@
 import Head from 'next/head'
-import Image from 'next/image'
-import styles from '../styles/Home.module.css'
+import { CloudFirestore } from '../firebase/config';
+import { useEffect, useState } from 'react';
+import { containerModel } from '../model/containerModel';
 
-export default function Home({containers}) {
+
+export default function Home() {
+  // useState containers
+  const [containers, setContainers] = useState([containerModel])   
+  useEffect(()=> {
+    const unsub = CloudFirestore.getAllContainersRealTime(setContainers)
+    return () => unsub
+  },[])
   return (
     <>
       <Head>
         <title>Home</title>
       </Head>
-      {containers.map(container =>
-        <div key={container.id} >
-          <a href={`/container/${container.id}`}>
-            {container.name}
+      {containers.map(c =>
+        <div key={c.id} >
+          <a href={`/container/${c.id}`}>
+            {c.name}
           </a>
         </div>
       )}
     </>
   )
-}
-
-export async function getServerSideProps() {
-  const req = await fetch(`http://localhost:3000/containers.json`)
-  const data = await req.json()
-
-  return {
-    props: {
-      containers: data.containers_list,
-    },
-  }
 }
